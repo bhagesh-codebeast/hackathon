@@ -5,9 +5,7 @@ import tempfile
 import time
 
 
-# from modules import ocr, objectdetection
-
-
+# from modules import ocr, noocr, classify
 
 st.title('Team Robocop')
 
@@ -17,9 +15,7 @@ col1.markdown("## Input")
 input_data = col1.file_uploader("Upload file")
 
 image = ''
-video_file = ''
 video_bytes = ''
-
 if input_data:
 	if input_data.name.endswith('.png'):
 		image = input_data
@@ -32,7 +28,7 @@ if input_data:
 col1.divider()
 task = col1.selectbox(
 	'Select the task to perform',
-	('Text-Recognition', 'Object-Detection-Image', 'Object-Detection-Video')
+	('OCR', 'Advanced-OCR', 'Object-Detection')
 	)
 start = col1.button('START')
 
@@ -40,7 +36,7 @@ start = col1.button('START')
 col2.markdown("## Prediction")
 if start:
 	if image:
-		if task == 'Text-Recognition':
+		if task == 'OCR':
 			with st.status("Running Advanced-OCR", expanded=True) as status:
 				st.write("Identifying Bounding Boxes...")
 				time.sleep(2)
@@ -51,7 +47,18 @@ if start:
 				st.write("Correcting Output...")
 				time.sleep(1)
 				status.update(label="OCR Complete", state="complete", expanded=False)
-		elif task == 'Object-Detection-Image':
+		elif task == 'Advanced-OCR':
+			with st.status("Running Advanced-OCR", expanded=True) as status:
+				st.write("Identifying Bounding Boxes...")
+				time.sleep(2)
+				st.write("Splitting Bounding Boxes...")
+				time.sleep(1)
+				st.write("Predicting Words...")
+				time.sleep(1)
+				st.write("Correcting Output...")
+				time.sleep(1)
+				status.update(label="Advanced-OCR Complete", state="complete", expanded=False)
+		elif task == 'Object-Detection':
 			with st.status("Object-Detection", expanded=True) as status:
 				st.write("Identifying Bounding Boxes...")
 				time.sleep(2)
@@ -62,22 +69,15 @@ if start:
 				st.write("Correcting Output...")
 				time.sleep(1)
 				status.update(label="Object-Detection Complete", state="complete", expanded=False)
+		
+
 		col2.image(image)
+		
 		message = col2.chat_message("ai")
-		message.write(task)
+		message.write(task)		
 		st.success('Prediction Complete!', icon="✅")
+
 	elif video_file:
-		if task == 'Object-Detection-Image':
-			with st.status("Object-Detection", expanded=True) as status:
-				st.write("Identifying Bounding Boxes...")
-				time.sleep(2)
-				st.write("Splitting Bounding Boxes...")
-				time.sleep(1)
-				st.write("Predicting Words...")
-				time.sleep(1)
-				st.write("Correcting Output...")
-				time.sleep(1)
-				status.update(label="Object-Detection Complete", state="complete", expanded=False)
 		col2.video(video_bytes)
 		message = col2.chat_message("ai")
 		message.write(task)		

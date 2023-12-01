@@ -1,0 +1,30 @@
+FROM continuumio/miniconda3:latest
+
+RUN conda update -n base -c defaults conda && \
+    conda create -n ml python=3.11 pip && \
+    echo "source activate ml" > ~/.bashrc
+
+ENV PATH /opt/conda/envs/ml/bin:$PATH
+
+RUN conda install -n ml -c conda-forge -c anaconda streamlit streamlit-extras pandas
+
+ENV PORT = 8000
+
+RUN conda install -n ml -c microsoft -c esri azure-core azure-ai-formrecognizer 
+
+RUN pip3 install azure-ai-vision
+RUN wget -O - https://www.openssl.org/source/openssl-1.1.1u.tar.gz | tar zxf -
+RUN cd openssl-1.1.1u
+RUN ./config --prefix=/usr/local
+RUN make -j $(nproc)
+RUN make install_sw install_ssldirs
+RUN ldconfig -v
+RUN export SSL_CERT_DIR=/etc/ssl/certs
+RUN cd -
+RUN apt-get install build-essential libssl-dev wget
+RUN wget http://security.ubuntu.com/ubuntu/pool/main/o/openssl/libssl1.1_1.1.1f-1ubuntu2_amd64.deb && dpkg -i libssl1.1_1.1.1f-1ubuntu2_amd64.deb && rm libssl1.1_1.1.1f-1ubuntu2_amd64.deb
+RUN sed -i 's/openssl_conf = openssl_init/#openssl_conf = openssl_init/g' /etc/ssl/openssl.cnf
+
+COPY app/* /app
+
+CMD ["streamlit", "run", "/app/app.py", "--server.port", "8000"]
